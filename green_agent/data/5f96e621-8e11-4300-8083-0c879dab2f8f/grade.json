@@ -1,0 +1,19 @@
+{
+  "task_id": "capsule-8197429",
+  "passed": false,
+  "score": 0.0,
+  "details": {
+    "per_question": {
+      "q1": {
+        "gold": "L2A-LL",
+        "pred": "UNKNOWN",
+        "correct": false
+      },
+      "q2": {
+        "gold": "Seconds",
+        "pred": "UNKNOWN",
+        "correct": false
+      }
+    }
+  }
+}

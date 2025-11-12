@@ -1,0 +1,17 @@
+{
+  "task_id": "capsule-8197429",
+  "answers": [
+    {
+      "id": "q1",
+      "answer": "UNKNOWN"
+    },
+    {
+      "id": "q2",
+      "answer": "UNKNOWN"
+    }
+  ],
+  "metadata": {
+    "mode": "autogpt-core",
+    "report_path": "/Users/jihangbc.edu/Downloads/corebench_a2a_ab/purple_agent/data/08ead09b-f21b-470a-bc83-06fbabb3c542/work/autogpt-core/environment/report.json"
+  }
+}

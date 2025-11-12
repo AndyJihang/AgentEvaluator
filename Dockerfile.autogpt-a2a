@@ -1,0 +1,22 @@
+# Dockerfile.autogpt-core-a2a
+# Purpose: minimal, predictable runtime for the upstream agents/autogpt-core scripts
+# - Ubuntu 22.04 so add-apt-repository/software-properties-common are present
+# - Python 3.10 preinstalled to satisfy the script's expectations
+
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      software-properties-common curl git ca-certificates sudo \
+      python3.10 python3.10-venv python3.10-dev python3-pip \
+ && ln -sf /usr/bin/python3.10 /usr/local/bin/python3.10 \
+ && python3.10 -m pip install --upgrade pip setuptools wheel \
+ && rm -rf /var/lib/apt/lists/*
+
+# We'll run as root; upstream script calls sudo sometimes, which is fine in this image.
+WORKDIR /workspace
+
