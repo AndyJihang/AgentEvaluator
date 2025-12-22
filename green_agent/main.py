@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import os, json, uuid, time, random
@@ -17,6 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
 from shared.schemas import TaskSpec, Report, Grade, DispatchRequest, DispatchResponse, Question
 from green_agent.corebench_dataset_grader import grade_by_gold
+from green_agent.llm_grader import grade_with_llm
 
 load_dotenv()
 
@@ -196,9 +196,34 @@ async def submit_results(request: Request):
 
     qid2pred = {a["id"]: a["answer"] for a in [ai.model_dump() for ai in report.answers]}
     g = grade_by_gold(qid2pred, qid2gold)
-    grade = Grade(task_id=report.task_id, passed=g["passed"], score=float(g["score"]), details={"per_question": g["per_question"]})
-    (run_dir / "grade.json").write_text(json.dumps(grade.model_dump(), indent=2), encoding="utf-8")
+    
+    grade = Grade(
+        task_id=report.task_id, 
+        passed=g["passed"], 
+        score=float(g["score"]), 
+        details={"per_question": g["per_question"]},
+        feedback="Exact match verified." if g["passed"] else "Exact match failed."
+    )
 
+    if not grade.passed:
+        print(f"🤔 规则匹配失败 (RunID: {run_id})，正在请求 AI 裁判复议...")
+        try:
+
+            notify_url = RUNS[run_id].get("notify_url", "")
+            current_task_spec = _build_task_spec(target, run_id, notify_url)
+
+            gold_str = json.dumps(qid2gold, ensure_ascii=False)
+
+            llm_grade_result = grade_with_llm(current_task_spec, report, gold_str)
+            grade = llm_grade_result
+            print(f"🤖 AI 裁判复议完成。结果: {'通过' if grade.passed else '失败'}, 分数: {grade.score}")
+            
+        except Exception as e:
+            print(f"⚠️ AI 评分出错，维持原判: {e}")
+            # 如果 LLM 挂了，就保留上面的 rule-based grade (False)
+
+    (run_dir / "grade.json").write_text(json.dumps(grade.model_dump(), indent=2), encoding="utf-8")
+    
     RUNS[run_id]["status"] = "graded"
     RUNS[run_id]["grade"] = grade.model_dump()
 
