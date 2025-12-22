@@ -28,12 +28,14 @@ class AnswerItem(BaseModel):
 class Report(BaseModel):
     task_id: str
     answers: List[AnswerItem]
+    trajectory: List[str] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 class Grade(BaseModel):
     task_id: str
     passed: bool
     score: float
+    feedback: str = ""
     details: Dict[str, Any] = Field(default_factory=dict)
 
 class DispatchRequest(BaseModel):
